@@ -1,5 +1,7 @@
 package test;
 
+
+
 import it.unisa.dia.gas.jpbc.*;
 import it.unisa.dia.gas.plaf.jpbc.pairing.PairingFactory;
 import it.unisa.dia.gas.plaf.jpbc.pairing.a.TypeACurveGenerator;
@@ -24,14 +26,29 @@ public class Test {
         PairingParameters typeAParams = pg.generate();
         Pairing pairing = PairingFactory.getPairing(typeAParams);
         //初始化相关参数
-        Element g = pairing.getG1().newRandomElement().getImmutable();     //生成生成元
-        Element b = pairing.getG1().newRandomElement().getImmutable();     //生成生成元
+        Element G1 = pairing.getG1().newRandomElement().getImmutable();     //生成生成元
+        Element b = pairing.getG1().newRandomElement();     //生成生成元
 
 
-        Field G1 = pairing.getG1();
-        Element e = G1.newRandomElement();
-//        ElementPowPreProcessing ppp = e.pow();
-//        Element a = ppp.pow(BigInteger.valueOf(5));
+        Element in1 = pairing.getG1().newRandomElement();
+
+
+
+        ElementPowPreProcessing ppp = G1.getElementPowPreProcessing();
+        Element pow1 = ppp.pow(BigInteger.valueOf(1));
+        System.out.println(pow1);
+
+
+        ElementPow elementPow=  b;
+
+
+/* Now let's raise using ppp which returns a new element which contains the result of the operation. */
+
+        Element out1 = ppp.pow(BigInteger.valueOf(5));
+
+        Element out2 = ppp.pow((BigInteger) pairing.getZr().newRandomElement());
+
+
 
        // System.out.println(g.isEqual(b));
 //

@@ -39,9 +39,9 @@ public class Main2 {
         String filePath=FileUtil.currentWorkDir  +"\\cuts\\";
 
 
-       long originFileSize = 1024 * 1024;// 1mb    初始文件大小
-        int blockFileSize = 1024 * 16;// 32K     切割后的文件块大小
-        int pieceFileSize = 1024 * 2;// 1K     切割后的文件片大小
+       long originFileSize = 1024 * 1024*10;// 1mb    初始文件大小
+        int blockFileSize = 1024 * 64;// 32K     切割后的文件块大小
+        int pieceFileSize = 1024 * 4;// 1K     切割后的文件片大小
 
 
 
@@ -109,20 +109,20 @@ public class Main2 {
 
         //签名阶段
         ArrayList<Element> signLists=new ArrayList<>();
-        ArrayList<Element> uLists=new ArrayList<>();
+        ArrayList<ElementPowPreProcessing> uLists=new ArrayList<>();
 
         System.out.println("开始签名，时间："+sdff.format(new Date(System.currentTimeMillis())));
 
         //生成U
         for(int i=0;i<pieceFilesAll.get(0).size();i++){
-            Element u = pairing.getG1().newRandomElement().getImmutable();
+            ElementPowPreProcessing u = pairing.getG1().newRandomElement().getImmutable().getElementPowPreProcessing();
             uLists.add(u);
         }
 
 
 
 
-        for (int i=0;i<pieceFilesAll.size();i++){
+        /*for (int i=0;i<pieceFilesAll.size();i++){
             int len=pieceFilesAll.get(i).size();
             File partFile=pieceFilesAll.get(i).get(0);
             byte[] bytesByFile=fileUtil.getBytes(partFile);
@@ -134,6 +134,37 @@ public class Main2 {
                 uContinuedProduct=uContinuedProduct.mul(uLists.get(j).pow(mb1));
             }
 
+            Element e=Sign.sign(g, uContinuedProduct, x, i+1);
+            signLists.add(e);
+            System.out.println(signLists.size());
+
+        }*/
+        BigInteger mb;
+        BigInteger mb1;
+        ElementPowPreProcessing signU;
+        Element signUpow;
+        File partFile;
+        File pieceFile;
+        byte[] bytesByFile;
+
+        for (int i=0;i<pieceFilesAll.size();i++){
+            int len=pieceFilesAll.get(i).size();
+            partFile=pieceFilesAll.get(i).get(0);
+            bytesByFile=fileUtil.getBytes(partFile);
+            mb=new BigInteger(bytesByFile);
+            signU=uLists.get(0);
+            Element uContinuedProduct=signU.pow(mb);
+
+
+            for (int j=1;j<len;j++) {
+                pieceFile=pieceFilesAll.get(i).get(j);
+                mb1=new BigInteger(fileUtil.getBytes(pieceFile));
+                signU=uLists.get(j);
+                signUpow=signU.pow(mb1);
+                uContinuedProduct=uContinuedProduct.mul(signUpow);
+
+
+            }
             Element e=Sign.sign(g, uContinuedProduct, x, i+1);
             signLists.add(e);
             System.out.println(signLists.size());
@@ -162,14 +193,14 @@ public class Main2 {
         //求miu
         ArrayList<Element> miuLists=new ArrayList<>();
         for(int j=0;j<pieceFilesAll.get(0).size();j++){
-            ArrayList<File> pieceFile=pieceFilesAll.get(0);
-            File file=pieceFile.get(j);
-            BigInteger mb = new BigInteger(fileUtil.getBytes(file));
+            ArrayList<File> pieceFileList=pieceFilesAll.get(0);
+            File file=pieceFileList.get(j);
+             mb = new BigInteger(fileUtil.getBytes(file));
             v_i=v_iLists.get(0);
             Element sum=v_i.mul(mb);
             for (int i=1;i<pieceFilesAll.size();i++){
                 File file1=pieceFilesAll.get(i).get(j);
-                BigInteger mb1 = new BigInteger(fileUtil.getBytes(file1));
+                 mb1 = new BigInteger(fileUtil.getBytes(file1));
                 sum=sum.add(v_iLists.get(i).mul(mb1));
 
             }
@@ -193,7 +224,7 @@ public class Main2 {
         }
 
         Element miuValue=miuLists.get(0);
-        Element uValue=uLists.get(0);
+        ElementPowPreProcessing uValue=uLists.get(0);
         Element miuValues=uValue.powZn(miuValue);
         for (int i=1;i<miuLists.size();i++){
             Element miu=miuLists.get(i);

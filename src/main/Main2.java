@@ -39,9 +39,9 @@ public class Main2 {
         String filePath=FileUtil.currentWorkDir  +"\\cuts\\";
 
 
-       long originFileSize = 1024 * 1024*10;// 1mb    初始文件大小
-        int blockFileSize = 1024 * 64;// 32K     切割后的文件块大小
-        int pieceFileSize = 1024 * 4;// 1K     切割后的文件片大小
+       long originFileSize = 1024 * 1024*100;// 10mb    初始文件大小
+        int blockFileSize = 1024 * 1024;// 32K     切割后的文件块大小
+        int pieceFileSize = 1024 * 16;// 1K     切割后的文件片大小
 
 
 
@@ -139,6 +139,7 @@ public class Main2 {
             System.out.println(signLists.size());
 
         }*/
+
         BigInteger mb;
         BigInteger mb1;
         ElementPowPreProcessing signU;

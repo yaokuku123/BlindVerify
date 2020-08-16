@@ -1,19 +1,60 @@
 package BlindSignature;
 
 import it.unisa.dia.gas.jpbc.Element;
+import it.unisa.dia.gas.jpbc.ElementPowPreProcessing;
 import it.unisa.dia.gas.jpbc.Pairing;
 import it.unisa.dia.gas.jpbc.PairingParameters;
 import it.unisa.dia.gas.plaf.jpbc.pairing.PairingFactory;
 import it.unisa.dia.gas.plaf.jpbc.pairing.a.TypeACurveGenerator;
+import util.FileUtil;
 import util.HashUtil;
 
+import java.io.File;
 import java.math.BigInteger;
+import java.util.ArrayList;
 
 /**
  * Created by admin on 2020/5/29.
  */
 public class Sign {
 
+    public ArrayList<Element> sign(ArrayList<ArrayList<File>> pieceFilesAll, FileUtil fileUtil, ArrayList<ElementPowPreProcessing> uLists,
+                                   Element g, Element x ){
+        ArrayList<Element> signLists=new ArrayList<>();
+        BigInteger mb;
+        BigInteger mb1;
+        ElementPowPreProcessing signU;
+        Element signUpow;
+        File partFile;
+        File pieceFile;
+        byte[] bytesByFile;
+
+        for (int i=0;i<pieceFilesAll.size();i++){
+            int len=pieceFilesAll.get(i).size();
+            partFile=pieceFilesAll.get(i).get(0);
+            bytesByFile=fileUtil.getBytes(partFile);
+            mb=new BigInteger(bytesByFile);
+            signU=uLists.get(0);
+            Element uContinuedProduct=signU.pow(mb);
+
+
+            for (int j=1;j<len;j++) {
+                pieceFile=pieceFilesAll.get(i).get(j);
+                mb1=new BigInteger(fileUtil.getBytes(pieceFile));
+                signU=uLists.get(j);
+                signUpow=signU.pow(mb1);
+                uContinuedProduct=uContinuedProduct.mul(signUpow);
+
+
+            }
+            //生成签名
+            Element e=Sign.sign(g, uContinuedProduct, x, i+1);
+            signLists.add(e);
+            System.out.println(signLists.size());
+
+        }
+        return signLists;
+    }
 
 
     public static Element sign(Element g,Element u,Element x,byte[] m,int n){

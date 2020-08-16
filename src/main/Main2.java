@@ -39,9 +39,9 @@ public class Main2 {
         String filePath=FileUtil.currentWorkDir  +"\\cuts\\";
 
 
-       long originFileSize = 1024 * 1024*100;// 10mb    初始文件大小
-        int blockFileSize = 1024 * 1024;// 32K     切割后的文件块大小
-        int pieceFileSize = 1024 * 16;// 1K     切割后的文件片大小
+       long originFileSize = 1024 * 1024*100;// 100mb    初始文件大小
+        int blockFileSize = 1024 * 1024;// 1mb     切割后的文件块大小
+        int pieceFileSize = 1024 * 64;// 64K     切割后的文件片大小
 
 
 
@@ -104,7 +104,6 @@ public class Main2 {
         //初始化相关参数
         Element g = pairing.getG1().newRandomElement().getImmutable();     //生成生成元
         Element x = pairing.getZr().newRandomElement().getImmutable();
-        //Element u = pairing.getG1().newRandomElement().getImmutable();
         Element v = g.powZn(x);
 
         //签名阶段
@@ -140,6 +139,7 @@ public class Main2 {
 
         }*/
 
+
         BigInteger mb;
         BigInteger mb1;
         ElementPowPreProcessing signU;
@@ -166,6 +166,7 @@ public class Main2 {
 
 
             }
+            //生成签名
             Element e=Sign.sign(g, uContinuedProduct, x, i+1);
             signLists.add(e);
             System.out.println(signLists.size());
@@ -217,6 +218,7 @@ public class Main2 {
         //开始验证
         System.out.println("开始验证，时间："+sdff.format(new Date(System.currentTimeMillis())));
         Element pairing1 = pairing.pairing(sigmasValues, g);   //e(u,v)^ab
+
         Element v_i_1=v_iLists.get(0);
         Element hashValue=g.pow(BigInteger.valueOf(HashUtil.javaDefaultHash(String.valueOf(1)))).powZn(v_i_1);
         for (int i=1;i<signLists.size();i++){
@@ -233,7 +235,7 @@ public class Main2 {
 
         }
 
-        Element pairing2 = pairing.pairing(hashValue.mul(miuValues), v);   //e(u,v)^ab
+        Element pairing2 = pairing.pairing(hashValue.mul(miuValues), v);
 
         boolean result=false;
         if(pairing1.equals(pairing2)){

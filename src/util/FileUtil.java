@@ -288,7 +288,7 @@ public class FileUtil {
     /**
      * 根据文件名，比较文件
      *
-     * @author yjmyzz@126.com
+     * @author
      */
     public static class FileComparator implements Comparator<File> {
         public int compare(File o1, File o2) {
@@ -299,7 +299,7 @@ public class FileUtil {
     /**
      * 分割处理Runnable
      *
-     * @author yjmyzz@126.com
+     * @author
      */
     private class SplitRunnable implements Runnable {
         int byteSize;
@@ -336,7 +336,7 @@ public class FileUtil {
     /**
      * 合并处理Runnable
      *
-     * @author yjmyzz@126.com
+     * @author
      */
     private class MergeRunnable implements Runnable {
         long startPos;

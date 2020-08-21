@@ -210,17 +210,35 @@ public class FileUtil {
         File file = new File(fileName);
         int count = (int) Math.ceil(file.length() / (double) byteSize);
         int countLen = (count + "").length();
-        ThreadPoolExecutor threadPool = new ThreadPoolExecutor(count,
-                count * 3, 1, TimeUnit.SECONDS,
-                new ArrayBlockingQueue<Runnable>(count * 2));
+//        ThreadPoolExecutor threadPool = new ThreadPoolExecutor(count,
+//                count * 3, 1, TimeUnit.SECONDS,
+//                new ArrayBlockingQueue<Runnable>(count * 2));
+//
+//        for (int i = 0; i < count; i++) {
+//            String partFileName = file.getName() + "."
+//                    + leftPad((i + 1) + "", countLen, '0') + partFileSuffix;
+//            threadPool.execute(new SplitRunnable(byteSize, i * byteSize,
+//                    partFileName, file));
+//            parts.add(partFileName);
+//        }
+//        return parts;
 
+        //********yqj*********
+        List<Thread> ts = new ArrayList<>();
         for (int i = 0; i < count; i++) {
             String partFileName = file.getName() + "."
                     + leftPad((i + 1) + "", countLen, '0') + partFileSuffix;
-            threadPool.execute(new SplitRunnable(byteSize, i * byteSize,
-                    partFileName, file));
+            ts.add(new Thread(new SplitRunnable(byteSize, i * byteSize, partFileName, file)));
             parts.add(partFileName);
         }
+        ts.forEach(Thread::start);
+        ts.forEach(t -> {
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
         return parts;
     }
 
@@ -239,17 +257,35 @@ public class FileUtil {
         File file = fileName;
         int count = (int) Math.ceil(file.length() / (double) byteSize);
         int countLen = (count + "").length();
-        ThreadPoolExecutor threadPool = new ThreadPoolExecutor(count,
-                count * 3, 1, TimeUnit.SECONDS,
-                new ArrayBlockingQueue<Runnable>(count * 2));
+//        ThreadPoolExecutor threadPool = new ThreadPoolExecutor(count,
+//                count * 3, 1, TimeUnit.SECONDS,
+//                new ArrayBlockingQueue<Runnable>(count * 2));
+//
+//        for (int i = 0; i < count; i++) {
+//            String partFileName = file.getName() + "."
+//                    + leftPad((i + 1) + "", countLen, '0') + partFileSuffix;
+//            threadPool.execute(new SplitRunnable(byteSize, i * byteSize,
+//                    partFileName, file));
+//            parts.add(partFileName);
+//        }
+//        return parts;
 
+        //********yqj*********
+        List<Thread> ts = new ArrayList<>();
         for (int i = 0; i < count; i++) {
             String partFileName = file.getName() + "."
                     + leftPad((i + 1) + "", countLen, '0') + partFileSuffix;
-            threadPool.execute(new SplitRunnable(byteSize, i * byteSize,
-                    partFileName, file));
+            ts.add(new Thread(new SplitRunnable(byteSize, i * byteSize, partFileName, file)));
             parts.add(partFileName);
         }
+        ts.forEach(Thread::start);
+        ts.forEach(t -> {
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
         return parts;
     }
 
@@ -327,6 +363,10 @@ public class FileUtil {
                 os.write(b, 0, s);
                 os.flush();
                 os.close();
+
+                //********yqj*********
+                //关闭流
+                rFile.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -465,6 +505,44 @@ public class FileUtil {
                     e1.printStackTrace();
                 }
             }
+        }
+    }
+
+    //********yqj*********
+    //删除目录下的全部文件
+    public static boolean deleteDir(String path){
+        File file = new File(path);
+        if(!file.exists()){
+            System.err.println("The dir are not exists!");
+            return false;
+        }
+
+        String[] content = file.list();
+        for(String name : content){
+            File temp = new File(path, name);
+            if(temp.isDirectory()){
+                deleteDir(temp.getAbsolutePath());
+                temp.delete();
+            }else{
+                if(!temp.delete()){
+                    System.err.println("Failed to delete " + name);
+                }
+            }
+        }
+        return true;
+    }
+
+    //********yqj*********
+    //数据写入csv文件
+    public static void writeToCsv(String path,String data){
+        try {
+            File csvFile = new File(path);
+            BufferedWriter bw = new BufferedWriter(new FileWriter(csvFile, true));//追加
+            bw.write(data);
+            bw.newLine();
+            bw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

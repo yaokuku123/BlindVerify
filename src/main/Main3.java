@@ -42,7 +42,6 @@ public class Main3 {
 
         //转成后的时间的格式
         SimpleDateFormat sdff = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
-        StringBuilder sb = new StringBuilder();
         FileUtil fileUtil = new FileUtil();
         String filePath = FileUtil.currentWorkDir + "\\cuts\\";
 
@@ -63,13 +62,14 @@ public class Main3 {
         long checkTime = 0; //查询时间
         long verifyTime = 0; //验证时间
 
-        for (int blockSpace = 1; blockSpace <= 1; blockSpace++) {
-            blockFileSize = CAL_MB_UNIT * blockSpace;
-            for (int pieceSpace = 64; pieceSpace <= 64; pieceSpace++) {
-                pieceFileSize = CAL_KB_UNIT * pieceSpace;
+        for (int pieceSpace = 64; pieceSpace <= 64; pieceSpace*=2) {
+            pieceFileSize = CAL_KB_UNIT * pieceSpace;
+            for (int blockSpace = 1; blockSpace <= 1; blockSpace+=2) {
+                blockFileSize = CAL_MB_UNIT * blockSpace;
                 // 生成一个大文件
                 //System.out.println("开始生成大文件，时间："+sdff.format(new Date(System.currentTimeMillis())));
                 start = System.nanoTime();
+                StringBuilder sb = new StringBuilder();
                 for (int i = 0; i < originFileSize; i++) {
                     sb.append("A");
                 }

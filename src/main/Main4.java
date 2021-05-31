@@ -16,12 +16,13 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Random;
 
 
 /**
  * Created by ACER on 2020/5/18.
  */
-public class Main3 {
+public class Main4 {
 
     //1kb
     private static final int CAL_KB_UNIT = 1024;
@@ -29,16 +30,15 @@ public class Main3 {
     private static final int CAL_MB_UNIT = 1024 * 1024;
 
     public static void main(String[] args) throws IOException, InterruptedException {
+        //初始化配置
+        long originFileSize = 100 * CAL_MB_UNIT;// 100mb    初始文件大小
+        int blockFileSize = 1 * CAL_MB_UNIT;// 切割后的文件块大小
+        int pieceFileSize = 64 * CAL_KB_UNIT;// 切割后的文件片大小
 
         //转成后的时间的格式
         SimpleDateFormat sdff = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
         FileUtil fileUtil = new FileUtil();
         String filePath = FileUtil.currentWorkDir + "\\cuts\\";
-
-
-        long originFileSize = 100 * CAL_MB_UNIT;// 100mb    初始文件大小
-        int blockFileSize = 1 * CAL_MB_UNIT;// 切割后的文件块大小
-        int pieceFileSize = 64 * CAL_KB_UNIT;// 切割后的文件片大小
 
         long start = 0; //各阶段开始时间
         long end = 0; //各阶段结束时间
@@ -51,42 +51,17 @@ public class Main3 {
 
         // 生成一个大文件
         start = System.nanoTime();
+        String str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        Random random = new Random();
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < originFileSize; i++) {
-            sb.append("A");
+            int number = random.nextInt(62);
+            sb.append(str.charAt(number));
         }
         String fileName = filePath + "origin.myfile";
         FileUtil.write(fileName, sb.toString());
         end = System.nanoTime();
         createFileTime = (end - start) / 1000_000;
-
-
-        // 将origin.myfile拆分
-        start = System.nanoTime();
-        fileUtil.splitBySize(fileName, blockFileSize, ".part");
-        end = System.nanoTime();
-        splitFileTime = (end - start) / 1000_000;
-
-
-        //存放所有切割好的文件块
-        ArrayList<File> partFiles = FileUtil.getDirFiles(filePath,
-                ".part");
-        Collections.sort(partFiles, new FileUtil.FileComparator());
-        //将文件块在切分为文件片
-        for (int i = 0; i < partFiles.size(); i++) {
-            File partFile = partFiles.get(i);
-            partFile.length();
-            fileUtil.splitBySize(partFile, pieceFileSize, "." + (i + 1) + "_piece");
-
-        }
-        ArrayList<ArrayList<File>> pieceFilesAll = new ArrayList<ArrayList<File>>();
-        for (int i = 0; i < partFiles.size(); i++) {
-            ArrayList<File> pieceFiles = FileUtil.getDirFiles(filePath,
-                    "." + (i + 1) + "_piece");
-            Collections.sort(partFiles, new FileUtil.FileComparator());
-            pieceFilesAll.add(pieceFiles);
-
-        }
 
 
         //盲签名第三版
@@ -103,7 +78,7 @@ public class Main3 {
         Element v = g.powZn(x);
         //生成U
         ArrayList<ElementPowPreProcessing> uLists = new ArrayList<>();
-        for (int i = 0; i < pieceFilesAll.get(0).size(); i++) {
+        for (int i = 0; i < blockFileSize / pieceFileSize; i++) {
             ElementPowPreProcessing u = pairing.getG1().newRandomElement().getImmutable().getElementPowPreProcessing();
             uLists.add(u);
         }
@@ -113,9 +88,10 @@ public class Main3 {
         start = System.nanoTime();
         ArrayList<Element> signLists;
         Sign sign = new Sign();
-        signLists = sign.sign(pieceFilesAll, fileUtil, uLists, g, x);
+        signLists = sign.sign(fileUtil, fileName, uLists, g, x, originFileSize, blockFileSize, pieceFileSize);
         end = System.nanoTime();
         signTime = (end - start) / 1000_000;
+
 
         /***************************************************************************************/
         //查询阶段
@@ -128,7 +104,7 @@ public class Main3 {
         Element sigmasValues = check.getSigh(pairing, signLists, viLists);
         //求miu
         ArrayList<Element> miuLists;
-        miuLists = check.getMiuList(pieceFilesAll, fileUtil, viLists);
+        miuLists = check.getMiuList(fileUtil, fileName, viLists, originFileSize, blockFileSize, pieceFileSize);
         end = System.nanoTime();
         checkTime = (end - start) / 1000_000;
 
@@ -142,7 +118,7 @@ public class Main3 {
 
         //********yqj*********
         //删除目录文件
-        FileUtil.deleteDir(filePath);
+//        FileUtil.deleteDir(filePath);
 
         //写入csv文件
         String csvPath = FileUtil.currentWorkDir + "\\data.csv";

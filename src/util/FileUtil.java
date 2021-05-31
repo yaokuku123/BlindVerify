@@ -448,6 +448,21 @@ public class FileUtil {
         }
     }
 
+    public byte[] getBytes(String fileName,int blockPos,int piecePos,
+                           int blockFileSize,int pieceFileSize){
+        byte[] buffer = new byte[pieceFileSize];
+        RandomAccessFile file = null;
+        try {
+            file = new RandomAccessFile(fileName,"rw");
+            file.seek(blockPos*blockFileSize+piecePos*pieceFileSize);
+            file.read(buffer);
+            file.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return buffer;
+    }
+
     /**
      * 获得指定文件的byte数组
      */

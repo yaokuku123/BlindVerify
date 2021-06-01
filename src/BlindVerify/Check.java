@@ -7,9 +7,12 @@ import util.HashUtil;
 
 import java.io.File;
 import java.math.BigInteger;
+import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import static BlindVerify.Sign.sigma;
+import static util.HashUtil.identityHashCode;
 
 /**
  * Created by admin on 2020/7/5.
@@ -25,13 +28,26 @@ public class Check {
      * @return
      */
     public ArrayList<Element> getViList(Pairing pairing, ArrayList<Element> signLists) {
+
         ArrayList<Element> v_iLists = new ArrayList<>();
+
+        //产生双线性群中的随机数
         Element v_i = pairing.getZr().newRandomElement().getImmutable();
         v_iLists.add(v_i);
-        for (int i = 1; i < signLists.size(); i++) {
-            Element v_i_1 = pairing.getZr().newRandomElement().getImmutable();
-            v_iLists.add(v_i_1);
 
+        for (int i = 1; i < signLists.size(); i++) {
+            byte[] v_i_bytes = v_i.getImmutable().toCanonicalRepresentation();
+            byte[] zp_bytes = v_i_bytes;
+            try {
+                MessageDigest hash = MessageDigest.getInstance("SHA-512");
+                zp_bytes = hash.digest(v_i_bytes);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            //将元素哈希到双线性群中
+            Element v_i_1 = pairing.getZr().newElementFromHash(zp_bytes, 0, zp_bytes.length).getImmutable();
+            v_iLists.add(v_i_1);
+            v_i = v_i_1;
         }
         return v_iLists;
     }

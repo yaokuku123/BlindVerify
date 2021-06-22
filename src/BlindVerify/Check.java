@@ -122,11 +122,11 @@ public class Check {
         BigInteger mb1;
         Element v_i;
         for (int j = 0; j < blockFileSize / pieceFileSize; j++) {
-            mb = new BigInteger(fileUtil.getBytes(fileName, 0, j, blockFileSize, pieceFileSize));
+            mb = new BigInteger(1,fileUtil.getBytes(fileName, 0, j, blockFileSize, pieceFileSize));
             v_i = v_iLists.get(0);
             Element sum = v_i.mul(mb);
             for (int i = 1; i < originFileSize / blockFileSize; i++) {
-                mb1 = new BigInteger(fileUtil.getBytes(fileName, i, j, blockFileSize, pieceFileSize));
+                mb1 = new BigInteger(1,fileUtil.getBytes(fileName, i, j, blockFileSize, pieceFileSize));
                 sum = sum.add(v_iLists.get(i).mul(mb1));
 
             }

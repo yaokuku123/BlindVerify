@@ -39,13 +39,13 @@ public class Sign {
         for (int i = 0; i < originFileSize / blockFileSize; i++) {
             int len = blockFileSize / pieceFileSize;
             bytesByFile = fileUtil.getBytes(fileName, i, 0,blockFileSize,pieceFileSize);
-            mb = new BigInteger(bytesByFile);
+            mb = new BigInteger(1,bytesByFile);
             signU = uLists.get(0);
             Element uContinuedProduct = signU.pow(mb);
 
 
             for (int j = 1; j < len; j++) {
-                mb1 = new BigInteger(fileUtil.getBytes(fileName, i, j,blockFileSize,pieceFileSize));
+                mb1 = new BigInteger(1,fileUtil.getBytes(fileName, i, j,blockFileSize,pieceFileSize));
                 signU = uLists.get(j);
                 signUpow = signU.pow(mb1);
                 uContinuedProduct = uContinuedProduct.mul(signUpow);

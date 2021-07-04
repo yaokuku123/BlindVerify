@@ -11,7 +11,9 @@ import util.HashUtil;
 
 import java.io.File;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Created by admin on 2020/5/29.
@@ -19,7 +21,7 @@ import java.util.ArrayList;
 public class Sign {
 
     /**
-     * 对源文件进行不拆分的情况下，计算并存储签名信息
+     * new 对源文件进行不拆分的情况下，计算并存储签名信息
      *
      * @param fileUtil
      * @param uLists
@@ -28,7 +30,93 @@ public class Sign {
      * @return
      */
     public ArrayList<Element> sign(FileUtil fileUtil, String fileName, ArrayList<ElementPowPreProcessing> uLists,
-                                   Element g, Element x, long originFileSize, int blockFileSize, int pieceFileSize) {
+                                   Element g, Element x, int originFileSize, int blockFileSize, int pieceFileSize) {
+        ArrayList<Element> signLists = new ArrayList<>();
+        BigInteger mb;
+        Element signUpow = null;
+        Element uContinuedProduct = null;
+        ElementPowPreProcessing signU;
+        byte[] blockBytes;
+        byte[] pieceBytes;
+        int blockFileCount = originFileSize / blockFileSize;
+        int pieceFileCount = blockFileSize / pieceFileSize;
+
+        for (int i = 0; i < blockFileCount; i++) {
+            blockBytes = fileUtil.getBytes(fileName, i, blockFileSize);
+            for (int j = 0; j < pieceFileCount; j++) {
+                pieceBytes = Arrays.copyOfRange(blockBytes, j * pieceFileSize, (j + 1) * pieceFileSize);
+
+                mb = new BigInteger(1, pieceBytes);
+                signU = uLists.get(j);
+                if (j == 0) {
+                    uContinuedProduct = signU.pow(mb);
+                } else {
+                    signUpow = signU.pow(mb);
+                    uContinuedProduct = uContinuedProduct.mul(signUpow);
+                }
+            }
+            //生成签名
+            Element e = Sign.sign(g, uContinuedProduct, x, i + 1);
+            signLists.add(e);
+
+        }
+        return signLists;
+    }
+
+    /**
+     * new 对源文件进行不拆分的情况下，计算并存储签名信息,采用Element替换BigInteger
+     *
+     * @param fileUtil
+     * @param uLists
+     * @param g
+     * @param x
+     * @return
+     */
+    public ArrayList<Element> signElm(Pairing pairing,FileUtil fileUtil, String fileName, ArrayList<ElementPowPreProcessing> uLists,
+                                   Element g, Element x, int originFileSize, int blockFileSize, int pieceFileSize) {
+        ArrayList<Element> signLists = new ArrayList<>();
+        BigInteger mb;
+        Element signUpow = null;
+        Element uContinuedProduct = null;
+        ElementPowPreProcessing signU;
+        byte[] blockBytes;
+        byte[] pieceBytes;
+        int blockFileCount = originFileSize / blockFileSize;
+        int pieceFileCount = blockFileSize / pieceFileSize;
+
+        for (int i = 0; i < blockFileCount; i++) {
+            blockBytes = fileUtil.getBytes(fileName, i, blockFileSize);
+            for (int j = 0; j < pieceFileCount; j++) {
+                pieceBytes = Arrays.copyOfRange(blockBytes, j * pieceFileSize, (j + 1) * pieceFileSize);
+                mb = pairing.getG1().newElementFromBytes(pieceBytes).toBigInteger();
+                signU = uLists.get(j);
+                if (j == 0) {
+                    uContinuedProduct = signU.pow(mb);
+                } else {
+                    signUpow = signU.pow(mb);
+                    uContinuedProduct = uContinuedProduct.mul(signUpow);
+                }
+            }
+            //生成签名
+            Element e = Sign.sign(g, uContinuedProduct, x, i + 1);
+            signLists.add(e);
+
+        }
+        return signLists;
+    }
+
+
+    /**
+     * old 对源文件进行不拆分的情况下，计算并存储签名信息
+     *
+     * @param fileUtil
+     * @param uLists
+     * @param g
+     * @param x
+     * @return
+     */
+    public ArrayList<Element> signOld(FileUtil fileUtil, String fileName, ArrayList<ElementPowPreProcessing> uLists,
+                                      Element g, Element x, long originFileSize, int blockFileSize, int pieceFileSize) {
         ArrayList<Element> signLists = new ArrayList<>();
         BigInteger mb;
         BigInteger mb1;
@@ -38,14 +126,14 @@ public class Sign {
 
         for (int i = 0; i < originFileSize / blockFileSize; i++) {
             int len = blockFileSize / pieceFileSize;
-            bytesByFile = fileUtil.getBytes(fileName, i, 0,blockFileSize,pieceFileSize);
-            mb = new BigInteger(1,bytesByFile);
+            bytesByFile = fileUtil.getBytes(fileName, i, 0, blockFileSize, pieceFileSize);
+            mb = new BigInteger(1, bytesByFile);
             signU = uLists.get(0);
             Element uContinuedProduct = signU.pow(mb);
 
 
             for (int j = 1; j < len; j++) {
-                mb1 = new BigInteger(1,fileUtil.getBytes(fileName, i, j,blockFileSize,pieceFileSize));
+                mb1 = new BigInteger(1, fileUtil.getBytes(fileName, i, j, blockFileSize, pieceFileSize));
                 signU = uLists.get(j);
                 signUpow = signU.pow(mb1);
                 uContinuedProduct = uContinuedProduct.mul(signUpow);
@@ -55,7 +143,6 @@ public class Sign {
             //生成签名
             Element e = Sign.sign(g, uContinuedProduct, x, i + 1);
             signLists.add(e);
-            System.out.println(signLists.size());
 
         }
         return signLists;

@@ -464,6 +464,39 @@ public class FileUtil {
     }
 
     /**
+     * 从文件中读取一块的文件信息，存储进缓存byte[]数组中，供后续使用
+     * @param fileName 文件
+     * @param blockPos 块的位置指针
+     * @param blockFileSize 块的大小
+     * @return
+     */
+    public byte[] getBytes(String fileName,int blockPos,int blockFileSize){
+        FileInputStream fis = null;
+        byte[] buf = new byte[blockFileSize]; //块缓存
+        int readLen = 0;
+        try {
+            fis = new FileInputStream(fileName);
+            fis.skip(blockPos*blockFileSize); //指针定位
+            readLen = fis.read(buf);
+            //最后一个不完整的块忽略
+//            if (readLen != blockFileSize){
+//                return new byte[blockFileSize];
+//            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (fis !=null){
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return buf;
+    }
+
+    /**
      * 获得指定文件的byte数组
      */
     public byte[] getBytes(File file){

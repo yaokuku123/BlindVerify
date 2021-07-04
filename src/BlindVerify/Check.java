@@ -9,6 +9,7 @@ import java.io.File;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import static BlindVerify.Sign.sigma;
@@ -105,7 +106,7 @@ public class Check {
     }
 
     /**
-     * 对源文件进行不拆分的情况下，计算并存储查询信息
+     * old 对源文件进行不拆分的情况下，计算并存储查询信息
      *
      * @param fileUtil
      * @param fileName
@@ -115,18 +116,18 @@ public class Check {
      * @param pieceFileSize
      * @return
      */
-    public ArrayList<Element> getMiuList(FileUtil fileUtil, String fileName, ArrayList<Element> v_iLists,
-                                         long originFileSize, int blockFileSize, int pieceFileSize) {
+    public ArrayList<Element> getMiuListOld(FileUtil fileUtil, String fileName, ArrayList<Element> v_iLists,
+                                            long originFileSize, int blockFileSize, int pieceFileSize) {
         ArrayList<Element> miuLists = new ArrayList<>();
         BigInteger mb;
         BigInteger mb1;
         Element v_i;
         for (int j = 0; j < blockFileSize / pieceFileSize; j++) {
-            mb = new BigInteger(1,fileUtil.getBytes(fileName, 0, j, blockFileSize, pieceFileSize));
+            mb = new BigInteger(1, fileUtil.getBytes(fileName, 0, j, blockFileSize, pieceFileSize));
             v_i = v_iLists.get(0);
             Element sum = v_i.mul(mb);
             for (int i = 1; i < originFileSize / blockFileSize; i++) {
-                mb1 = new BigInteger(1,fileUtil.getBytes(fileName, i, j, blockFileSize, pieceFileSize));
+                mb1 = new BigInteger(1, fileUtil.getBytes(fileName, i, j, blockFileSize, pieceFileSize));
                 sum = sum.add(v_iLists.get(i).mul(mb1));
 
             }
@@ -134,6 +135,42 @@ public class Check {
 
         }
         return miuLists;
+    }
+
+    /**
+     * new 对源文件进行不拆分的情况下，计算并存储查询信息，采用Element替换BigInteger
+     *
+     * @param pairing        算法构建对象
+     * @param fileUtil       文件操作工具
+     * @param fileName       文件名
+     * @param v_iLists       vlist集合
+     * @param originFileSize 原始文件大小
+     * @param blockFileSize  块大小
+     * @param pieceFileSize  片大小
+     * @return miuLists集合
+     */
+    public ArrayList<Element> getMiuListElm(Pairing pairing, FileUtil fileUtil, String fileName, ArrayList<Element> v_iLists,
+                                            int originFileSize, int blockFileSize, int pieceFileSize) {
+        int blockFileCount = originFileSize / blockFileSize;
+        int pieceFileCount = blockFileSize / pieceFileSize;
+        byte[] blockBytes;
+        byte[] pieceBytes;
+        BigInteger mb;
+        Element v_i;
+        Element[] miuLists = new Element[pieceFileCount];
+        for (int i = 0; i < blockFileCount; i++) {
+            blockBytes = fileUtil.getBytes(fileName, i, blockFileSize);
+            v_i = v_iLists.get(i);
+            for (int j = 0; j < pieceFileCount; j++) {
+                pieceBytes = Arrays.copyOfRange(blockBytes, j * pieceFileSize, (j + 1) * pieceFileSize);
+                mb = pairing.getG1().newElementFromBytes(pieceBytes).toBigInteger();
+                if (i == 0) {
+                    miuLists[j] = v_i.mul(mb);
+                }
+                miuLists[j].add(v_i.mul(mb));
+            }
+        }
+        return new ArrayList<>(Arrays.asList(miuLists));
     }
 
 }

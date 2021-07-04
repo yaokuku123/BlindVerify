@@ -16,15 +16,19 @@ import java.util.ArrayList;
 
 /**
  * Copyright(C),2019-2021,XXX公司
- * FileName: Main5
+ * FileName: MainForDraw
  * Author: yaoqijun
- * Date: 2021/6/22 9:49
+ * Date: 2021/6/23 16:19
  */
-public class Main5 {
-
-
+public class MainForDraw {
     public static void main(String[] args) {
-        long start,end;
+
+        long start = 0; //各阶段开始时间
+        long end = 0; //各阶段结束时间
+        long signTime = 0; //签名时间
+        long checkTime = 0; //查询时间
+        long verifyTime = 0; //验证时间
+
         String filePath = "D:\\study\\code\\test\\zerotrust-demo\\uploadFile\\multichain-2.0-latest.tar.gz";
         //初始化配置
         int originFileSize = (int) new File(filePath).length(); //获取文件大小
@@ -50,16 +54,16 @@ public class Main5 {
             uLists.add(u);
         }
         //签名阶段
-        start = System.currentTimeMillis();
+        start = System.nanoTime();
         ArrayList<Element> signLists;
         Sign sign = new Sign();
         FileUtil fileUtil = new FileUtil();
         signLists = sign.signElm(pairing,fileUtil, filePath, uLists, g, x, originFileSize, blockFileSize, pieceFileSize);
-        end = System.currentTimeMillis();
-        System.out.println("签名时间："+ (end-start)/1000 + "s");
+        end = System.nanoTime();
+        signTime = end - start;
 
         //查询阶段
-        start = System.currentTimeMillis();
+        start = System.nanoTime();
         Check check = new Check();
         //求viLists
         ArrayList<Element> viLists;
@@ -69,15 +73,24 @@ public class Main5 {
         //求miu
         ArrayList<Element> miuLists;
         miuLists = check.getMiuListElm(pairing,fileUtil, filePath, viLists, originFileSize, blockFileSize, pieceFileSize);
-        end = System.currentTimeMillis();
-        System.out.println("查询时间："+ (end-start)/1000 + "s");
+        end = System.nanoTime();
+        checkTime = end - start;
 
         //开始验证
-        start = System.currentTimeMillis();
+        start = System.nanoTime();
         Verify verify = new Verify();
         boolean result = verify.verifyResult(pairing, g, uLists, v, sigmasValues, viLists, signLists, miuLists);
         end = System.currentTimeMillis();
-        System.out.println("验证时间："+ (end-start)/1000 + "s");
-        System.out.println(result);
+        verifyTime = end - start;
+
+        //写入csv文件
+        String csvPath = FileUtil.currentWorkDir + "\\data.csv";
+        String data = originFileSize + "," + blockFileSize + "," + pieceFileSize + "," + signTime + "," + checkTime + "," + verifyTime;
+        FileUtil.writeToCsv(csvPath, data);
+        //结果打印
+        System.out.println("验证结果：" + result);
+        System.out.println("初始文件大小：" + originFileSize + " 切割后的文件块大小：" + blockFileSize
+                + " 切割后的文件片大小：" + pieceFileSize  + " 签名时间：" + signTime + " 查询时间：" + checkTime + " 验证时间："
+                + verifyTime + " 单位：ms");
     }
 }

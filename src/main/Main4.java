@@ -31,7 +31,7 @@ public class Main4 {
 
     public static void main(String[] args) throws IOException, InterruptedException {
         //初始化配置
-        long originFileSize = 100 * CAL_MB_UNIT;// 100mb    初始文件大小
+        int originFileSize = 100 * CAL_MB_UNIT;// 100mb    初始文件大小
         int blockFileSize = 1 * CAL_MB_UNIT;// 切割后的文件块大小
         int pieceFileSize = 64 * CAL_KB_UNIT;// 切割后的文件片大小
 
@@ -104,7 +104,7 @@ public class Main4 {
         Element sigmasValues = check.getSigh(pairing, signLists, viLists);
         //求miu
         ArrayList<Element> miuLists;
-        miuLists = check.getMiuList(fileUtil, fileName, viLists, originFileSize, blockFileSize, pieceFileSize);
+        miuLists = check.getMiuListElm(pairing,fileUtil, fileName, viLists, originFileSize, blockFileSize, pieceFileSize);
         end = System.nanoTime();
         checkTime = (end - start) / 1000_000;
 

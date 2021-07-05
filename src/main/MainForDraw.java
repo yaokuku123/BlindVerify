@@ -58,7 +58,7 @@ public class MainForDraw {
         ArrayList<Element> signLists;
         Sign sign = new Sign();
         FileUtil fileUtil = new FileUtil();
-        signLists = sign.signElm(pairing,fileUtil, filePath, uLists, g, x, originFileSize, blockFileSize, pieceFileSize);
+        signLists = sign.sign(fileUtil, filePath, uLists, g, x, originFileSize, blockFileSize, pieceFileSize);
         end = System.nanoTime();
         signTime = end - start;
 
@@ -72,7 +72,7 @@ public class MainForDraw {
         Element sigmasValues = check.getSigh(pairing, signLists, viLists);
         //求miu
         ArrayList<Element> miuLists;
-        miuLists = check.getMiuListElm(pairing,fileUtil, filePath, viLists, originFileSize, blockFileSize, pieceFileSize);
+        miuLists = check.getMiuList(fileUtil, filePath, viLists, originFileSize, blockFileSize, pieceFileSize);
         end = System.nanoTime();
         checkTime = end - start;
 

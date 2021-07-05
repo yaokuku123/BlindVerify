@@ -56,7 +56,7 @@ public class Main5 {
         ArrayList<Element> signLists;
         Sign sign = new Sign();
         FileUtil fileUtil = new FileUtil();
-        signLists = sign.signElm(pairing,fileUtil, filePath, uLists, g, x, originFileSize, blockFileSize, pieceFileSize);
+        signLists = sign.sign(fileUtil, filePath, uLists, g, x, originFileSize, blockFileSize, pieceFileSize);
         end = System.currentTimeMillis();
         System.out.println("签名时间："+ (end-start)/1000 + "s");
 
@@ -70,7 +70,7 @@ public class Main5 {
         Element sigmasValues = check.getSigh(pairing, signLists, viLists);
         //求miu
         ArrayList<Element> miuLists;
-        miuLists = check.getMiuListElm(pairing,fileUtil, filePath, viLists, originFileSize, blockFileSize, pieceFileSize);
+        miuLists = check.getMiuList(fileUtil, filePath, viLists, originFileSize, blockFileSize, pieceFileSize);
         end = System.currentTimeMillis();
         System.out.println("查询时间："+ (end-start)/1000 + "s");
 

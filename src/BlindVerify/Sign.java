@@ -29,7 +29,7 @@ public class Sign {
      * @param x
      * @return
      */
-    public ArrayList<Element> sign(FileUtil fileUtil, String fileName, ArrayList<ElementPowPreProcessing> uLists,
+    public ArrayList<Element> signOld(FileUtil fileUtil, String fileName, ArrayList<ElementPowPreProcessing> uLists,
                                    Element g, Element x, int originFileSize, int blockFileSize, int pieceFileSize) {
         ArrayList<Element> signLists = new ArrayList<>();
         BigInteger mb;
@@ -72,7 +72,7 @@ public class Sign {
      * @param x
      * @return
      */
-    public ArrayList<Element> signElm(Pairing pairing,FileUtil fileUtil, String fileName, ArrayList<ElementPowPreProcessing> uLists,
+    public ArrayList<Element> sign(FileUtil fileUtil, String fileName, ArrayList<ElementPowPreProcessing> uLists,
                                    Element g, Element x, int originFileSize, int blockFileSize, int pieceFileSize) {
         ArrayList<Element> signLists = new ArrayList<>();
         BigInteger mb;
@@ -88,7 +88,6 @@ public class Sign {
             blockBytes = fileUtil.getBytes(fileName, i, blockFileSize);
             for (int j = 0; j < pieceFileCount; j++) {
                 pieceBytes = Arrays.copyOfRange(blockBytes, j * pieceFileSize, (j + 1) * pieceFileSize);
-//                mb = pairing.getG1().newElementFromBytes(pieceBytes).toBigInteger();
                 mb=new BigInteger(1,pieceBytes);
                 signU = uLists.get(j);
                 if (j == 0) {

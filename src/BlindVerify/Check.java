@@ -140,7 +140,6 @@ public class Check {
     /**
      * new 对源文件进行不拆分的情况下，计算并存储查询信息，采用Element替换BigInteger
      *
-     * @param pairing        算法构建对象
      * @param fileUtil       文件操作工具
      * @param fileName       文件名
      * @param v_iLists       vlist集合
@@ -149,7 +148,7 @@ public class Check {
      * @param pieceFileSize  片大小
      * @return miuLists集合
      */
-    public ArrayList<Element> getMiuListElm(Pairing pairing, FileUtil fileUtil, String fileName, ArrayList<Element> v_iLists,
+    public ArrayList<Element> getMiuList(FileUtil fileUtil, String fileName, ArrayList<Element> v_iLists,
                                             int originFileSize, int blockFileSize, int pieceFileSize) {
         int blockFileCount = originFileSize / blockFileSize;
         int pieceFileCount = blockFileSize / pieceFileSize;
@@ -163,7 +162,6 @@ public class Check {
             v_i = v_iLists.get(i).getImmutable();
             for (int j = 0; j < pieceFileCount; j++) {
                 pieceBytes = Arrays.copyOfRange(blockBytes, j * pieceFileSize, (j + 1) * pieceFileSize);
-//                mb = pairing.getG1().newElementFromBytes(pieceBytes).toBigInteger();
                 mb = new BigInteger(1,pieceBytes);
                 if (i == 0) {
                     miuLists[j] = v_i.mul(mb);

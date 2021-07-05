@@ -88,7 +88,8 @@ public class Sign {
             blockBytes = fileUtil.getBytes(fileName, i, blockFileSize);
             for (int j = 0; j < pieceFileCount; j++) {
                 pieceBytes = Arrays.copyOfRange(blockBytes, j * pieceFileSize, (j + 1) * pieceFileSize);
-                mb = pairing.getG1().newElementFromBytes(pieceBytes).toBigInteger();
+//                mb = pairing.getG1().newElementFromBytes(pieceBytes).toBigInteger();
+                mb=new BigInteger(1,pieceBytes);
                 signU = uLists.get(j);
                 if (j == 0) {
                     uContinuedProduct = signU.pow(mb);

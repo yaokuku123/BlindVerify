@@ -25,7 +25,9 @@ public class Main5 {
 
     public static void main(String[] args) {
         long start,end;
-        String filePath = "D:\\study\\code\\test\\zerotrust-demo\\uploadFile\\multichain-2.0-latest.tar.gz";
+        //String filePath = "D:\\study\\code\\test\\zerotrust-demo\\uploadFile\\multichain-2.0-latest.tar.gz";
+        String filePath = "D:\\Downloads\\JDK\\javafx-src.zip";
+//        String filePath = "D:\\Downloads\\apache-jmeter-5.4.1\\apache-jmeter-5.2.1.rar";
         //初始化配置
         int originFileSize = (int) new File(filePath).length(); //获取文件大小
         int pieceFileSize = 64; //定义片大小

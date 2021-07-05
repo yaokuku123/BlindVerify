@@ -160,14 +160,16 @@ public class Check {
         Element[] miuLists = new Element[pieceFileCount];
         for (int i = 0; i < blockFileCount; i++) {
             blockBytes = fileUtil.getBytes(fileName, i, blockFileSize);
-            v_i = v_iLists.get(i);
+            v_i = v_iLists.get(i).getImmutable();
             for (int j = 0; j < pieceFileCount; j++) {
                 pieceBytes = Arrays.copyOfRange(blockBytes, j * pieceFileSize, (j + 1) * pieceFileSize);
-                mb = pairing.getG1().newElementFromBytes(pieceBytes).toBigInteger();
+//                mb = pairing.getG1().newElementFromBytes(pieceBytes).toBigInteger();
+                mb = new BigInteger(1,pieceBytes);
                 if (i == 0) {
                     miuLists[j] = v_i.mul(mb);
+                }else{
+                    miuLists[j] = miuLists[j].add(v_i.mul(mb));
                 }
-                miuLists[j].add(v_i.mul(mb));
             }
         }
         return new ArrayList<>(Arrays.asList(miuLists));
